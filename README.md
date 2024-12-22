@@ -1,6 +1,6 @@
 # vpype-solids
 
-[`vpype`](https://github.com/abey79/vpype) plug-in to [_to be completed_]
+[`vpype`](https://github.com/abey79/vpype) plug-in to generate renders of three dimensional scenes
 
 
 ## Examples
