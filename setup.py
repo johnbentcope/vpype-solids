@@ -1,6 +1,5 @@
 from setuptools import setup
 
-
 with open("README.md") as f:
     readme = f.read()
 
@@ -19,13 +18,13 @@ setup(
         "Topic :: Multimedia :: Graphics",
         "Environment :: Plugins",
     ],
-    setup_requires=["wheel"],
     install_requires=[
         'click',
-        'vpype[all]>=1.10,<2.0',
+        'vpype>=1.9,<2.0',
+        'numpy',
     ],
     entry_points='''
             [vpype.plugins]
-            vpype_solids=vpype_solids.vpype_solids:vpype_solids
+            solids=vpype_solids.solids:solids
         ''',
 )
