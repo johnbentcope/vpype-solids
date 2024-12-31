@@ -5,7 +5,7 @@ with open("README.md") as f:
 
 setup(
     name="vpype-solids",
-    version="0.1.0",
+    version="0.0.1",
     description="vpype plugin to generate renders of three dimensional scenes",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -25,6 +25,6 @@ setup(
     ],
     entry_points='''
             [vpype.plugins]
-            solids=vpype_solids.solids:solids
+            vpype_solids=vpype_solids.vpype_solids:vpype_solids
         ''',
 )

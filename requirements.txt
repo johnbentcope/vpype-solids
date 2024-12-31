@@ -1,0 +1,5 @@
+click
+vpype>=1.9,<2.0
+numpy>=1.26.0, <=1.26.4
+shapely>= 1.8.1, <=1.8.5
+tinyobjloader>=2.0.0rc13

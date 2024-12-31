@@ -28,7 +28,7 @@ $ pip install vpype-solids
 Check that your install is successful:
 
 ```
-$ vpype vpype_solids --help
+$ vpype vpype-solids --help
 [...]
 ```
 
@@ -37,7 +37,7 @@ $ vpype vpype_solids --help
 The complete plug-in documentation is available directly in the CLI help:
 
 ```bash
-$ vpype vpype_solids --help
+$ vpype vpype-solids --help
 ```
 
 
@@ -62,8 +62,7 @@ Install `vpype-solids` and its dependencies (including `vpype`):
 
 ```bash
 $ pip install -e .
-$ pip install -r dev-dependencies.txt
-```
+$ pip install -r requirements.txt
 
 
 ## License
