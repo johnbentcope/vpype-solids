@@ -3,7 +3,8 @@ import numpy as np
 import vpype as vp
 import vpype_cli
 import tinyobjloader
-from typing import Iterator, Tuple
+from dataclasses import dataclass
+from typing import Iterator, List, Tuple
 
 from vpype_cli.types import LayerType,LengthType
 
@@ -52,6 +53,20 @@ def process_shape(shape, attrib):
 
   return list(unique_lines)
 
+def generate_projection_matrix(aspect, fov, z_near, z_far):
+  f = 1 / np.tan(np.radians(fov)/2.0)
+  q = (z_far)/(z_far-z_near)
+  if (z_near == z_far):
+    print("Cannot compute a null frustum.")
+    return None
+  proj_matrix = np.matrix([
+    [ aspect*f,        0,        0,        0],
+    [        0,        f,        0,        0],
+    [        0,        0,        q,        1],
+    [        0,        0, z_near*q,        0]
+  ])
+  return proj_matrix
+
 @click.command()
 @click.option("--filename",type=vpype_cli.PathType(exists=True), required=True)
 # @click.option("-t", "--translation", type=float, default=-1.0)
@@ -75,9 +90,9 @@ def process_shape(shape, attrib):
 @click.option("-f", "--fov", type=float, default=90.0)
 @click.option("--z_near", type=float, default=0.01)
 @click.option("--z_far", type=float, default=1000.0)
-@click.option("--aspect", type=float, default=-1.0)
-@click.option("-w", "--width", type=float, default=-1.0)
-@click.option("-h", "--height", type=float, default=-1.0)
+@click.option("--aspect", type=float, default=-1.0)   
+@click.option("-w", "--width", type=LengthType(), default=-1.0)
+@click.option("-h", "--height", type=LengthType(), default=-1.0)
 @vpype_cli.global_processor
 
 def vpype_solids(document: vp.Document, filename: str,
@@ -101,21 +116,40 @@ def vpype_solids(document: vp.Document, filename: str,
   if not ret:
     raise click.ClickException("Failed to load file")
 
-  # Debug prints, remove someday
-  print(f"document: {document}")
-  print(f"filename: {filename}")
-  # print(f"translation: {translation}")
-  # print(f"rotation: {rotation}")
-  print(f"layer: {layer}")
-  # print(f"eye_x: {eye_x}")
-  # print(f"eye_y: {eye_y}")
-  # print(f"eye_z: {eye_z}")
-  # print(f"look_x: {look_x}")
-  # print(f"look_y: {look_y}")
-  # print(f"look_z: {look_z}")
-  # print(f"up_x: {up_x}")
-  # print(f"up_y: {up_y}")
-  # print(f"up_z: {up_z}")
+  if ((width > 0 and height > 0 and aspect > 0) or  # W H A
+      width == 0 or height == 0 or aspect == 0):
+    print("Failure calculating aspect ratio.")
+    raise SystemExit()
+  if width > 0:
+    if height > 0:                                  # W H a
+      aspect = width/height
+    elif aspect > 0:                                # W h A
+      height = width / aspect
+    else:                                           # W h a
+      height = width
+      aspect = 1.0
+  if height > 0:
+    if aspect > 0:                                  # w H A
+      width =  height * aspect
+    else:                                           # w H a
+      width = height
+      aspect = 1.0
+
+  # # Debug prints, remove someday
+  # print(f"document: {document}")
+  # print(f"filename: {filename}")
+  # # print(f"translation: {translation}")
+  # # print(f"rotation: {rotation}")
+  # print(f"layer: {layer}")
+  # # print(f"eye_x: {eye_x}")
+  # # print(f"eye_y: {eye_y}")
+  # # print(f"eye_z: {eye_z}")
+  # # print(f"look_x: {look_x}")
+  # # print(f"look_y: {look_y}")
+  # # print(f"look_z: {look_z}")
+  # # print(f"up_x: {up_x}")
+  # # print(f"up_y: {up_y}")
+  # # print(f"up_z: {up_z}")
   print(f"fov: {fov}")
   print(f"z_near: {z_near}")
   print(f"z_far: {z_far}")
@@ -123,13 +157,8 @@ def vpype_solids(document: vp.Document, filename: str,
   print(f"width: {width}")
   print(f"height: {height}")
 
-  # # Calculate aspect ratio if needed
-  # if aspect <= 0:
-  #   bounds = document.bounds()
-  #   if bounds is not None:
-  #     aspect = bounds[2] / bounds[3]
-  #   else:
-  #     aspect = 1.0
+  proj_matrix = generate_projection_matrix(aspect, fov, z_near, z_far)
+  print(f"proj_matrix = \n{proj_matrix}")
 
   attrib = reader.GetAttrib()
 
@@ -141,21 +170,51 @@ def vpype_solids(document: vp.Document, filename: str,
   for shape in shapes:
     print(shape.name)
 
-    unique_lines = process_shape(shape, attrib)
+    VERT = []
+    EDGE = []
+    POLY = []
+    ADJACENCIES = []
+    ENTER1 = []
+    ENTER2 = []
 
-    # Debug: Use direct x,y coords instead of projection
-    for line in unique_lines:
-      v1 = numpy_verts[line.v1_idx]
-      v2 = numpy_verts[line.v2_idx]
-      # Convert to complex numbers (x + yi)
-      c1 = complex(v1[0], -v1[2])
-      c2 = complex(v2[0], -v2[2])
+  #   unique_lines = process_shape(shape, attrib)
 
-      lc.append([(c1, c2)])
+  #   # Debug: Use direct x,y coords instead of projection
+  #   for line in unique_lines:
+  #     v1 = numpy_verts[line.v1_idx]
+  #     v2 = numpy_verts[line.v2_idx]
+  #     # Convert to complex numbers (x + yi)
+  #     c1 = complex(v1[0], -v1[2])
+  #     c2 = complex(v2[0], -v2[2])
 
-    print(f"lc = {lc.segment_count()}")
+  #     lc.append([(c1, c2)])
 
-  document.add(lc, target_layer)
+  #   print(f"lc = {lc.segment_count()}")
+
+  # document.add(lc, target_layer)
   return document
 
 vpype_solids.help_group = "Input"
+
+# Gamma is the set of all polygons in the 2D plane
+
+@dataclass
+class Vertex2D:
+  coordinates: tuple[float, float]
+  adjacencies: List[int]
+
+@dataclass
+class Edge2D:
+  v: int
+  w: int
+  adj: List[int]
+
+
+# Each record of POLY corresponds to a polygon in Gamma
+# and contains a list, BOUNDARY, of the indices of vertices in VERT that are on the boundary of Pi,
+# listed as they would occur if one were to traverse Pi
+@dataclass
+class Poly2D:
+  boundary: List[int]
+  coordinates: List[int] # For storing [a, b, c, d] for the planar equation ax + by + cz + d = 0
+  
