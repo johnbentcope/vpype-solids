@@ -43,8 +43,8 @@ Each record of `EDGE` corresponds to an edge `(v, w)`, and contains the followin
 * the index, `SIDE`, of the polygon (if any) in `POLY` that contains `(v, w)` on its boundary (2)
 * the index of the position of `v` in the `BOUNDARY` list of the `SIDE` polygon (3)
 * the index of the position of `w` in the `BOUNDARY` list of the `SIDE` polygon (3)
-* a list, `ENTER1`, 
-* a list, `ENTER2`, 
+* a list, `ENTER1`, of the indices of all polygons one enters when traversing `(v, w)` from `v` to `w`
+* a list, `ENTER2`, of the indices of all polygons one enters when traversing `(v, w)` from `w` to `v`
 
 Given a set `S` of line segments in the plane, the line segments of `S` are added in random order, one by one, to a set `U`. An undirected graph, `H(U)` of the intersection points, the segment endpoints, and the upwards and downwards vertical shadows of segment endpoints and intersection points is maintained as `U` grows.
 
