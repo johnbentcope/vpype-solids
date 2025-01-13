@@ -41,7 +41,7 @@ def get_face_lines(indices, face_start: int, num_vertices: int) -> list[Line]:
     pass
   return lines
 
-def process_shape(shape, attrib):
+def process_shape(shape):
   unique_lines = set()
   indices = shape.mesh.vertex_indices()
   face_sizes = shape.mesh.num_face_vertices
@@ -60,10 +60,10 @@ def generate_projection_matrix(aspect, fov, z_near, z_far):
     print("Cannot compute a null frustum.")
     return None
   proj_matrix = np.matrix([
-    [ aspect*f,        0,        0,        0],
-    [        0,        f,        0,        0],
-    [        0,        0,        q,        1],
-    [        0,        0, z_near*q,        0]
+    [  aspect*f,         0,         0,         0],
+    [         0,         f,         0,         0],
+    [         0,         0,         q,         1],
+    [         0,         0, -z_near*q,         0]
   ])
   return proj_matrix
 
@@ -164,20 +164,39 @@ def vpype_solids(document: vp.Document, filename: str,
 
   numpy_verts = attrib.numpy_vertices()
   numpy_verts = numpy_verts.reshape(-1, 3)
+  print(f"numpy_verts:\n{numpy_verts}")
 
   shapes = reader.GetShapes()
 
   for shape in shapes:
     print(shape.name)
 
-    VERT = []
-    EDGE = []
-    POLY = []
-    ADJACENCIES = []
-    ENTER1 = []
-    ENTER2 = []
+    VERT    = []
+    EDGE    = []
+    POLY    = []
+    COMP    = []
 
-  #   unique_lines = process_shape(shape, attrib)
+    # print("len(num_indices) = {}".format(len(shape.mesh.indices)))
+    for i, idx in enumerate(shape.mesh.indices):
+      print(f"[{i}] v_idx {idx.vertex_index:2}")
+    
+    temp = np.array([numpy_verts[0][0],numpy_verts[0][1],numpy_verts[0][2],1]) @ proj_matrix
+    temp = np.array([temp[0,0], temp[0,1], temp[0,2]])/temp[0,3]
+    print(f"projected {numpy_verts[0]} is {temp}")
+
+    # face_boundary_lengths = shape.mesh.num_face_vertices
+    # print(f"face sizes: {face_boundary_lengths}")
+
+    # indices = shape.mesh.vertex_indices()
+    # print(f"indices: {indices}")
+
+    # current_idx = 0
+    # for face_size in face_boundary_lengths:
+    #   face_lines = get_face_lines(indices, current_idx, face_size)
+    #   unique_lines.update(face_lines)
+    #   current_idx += face_size
+
+  #   unique_lines = process_shape(shape)
 
   #   # Debug: Use direct x,y coords instead of projection
   #   for line in unique_lines:
@@ -196,25 +215,25 @@ def vpype_solids(document: vp.Document, filename: str,
 
 vpype_solids.help_group = "Input"
 
-# Gamma is the set of all polygons in the 2D plane
-
+# Each record of VERT corresponds to a vertex v, and contains the following fields:
 @dataclass
 class Vertex2D:
-  coordinates: tuple[float, float]
-  adjacencies: List[int]
+  coordinates:  tuple[float, float]  # the x and y coordinates of v
+  adjacencies:  List[int]            # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
 
+# Each record of EDGE corresponds to an edge (v, w), and contains the following fields:
 @dataclass
 class Edge2D:
-  v: int
-  w: int
-  adj: List[int]
+  v_index_v:  int       # the index of v in VERT
+  w_index_v:  int       # the index of w in VERT
+  side:       int       # the index, SIDE, of the polygon (if any) in POLY that contains (v, w) on its boundary
+  v_index_s:  int       # the index of the position of v in the BOUNDARY list of the SIDE polygon
+  w_index_s:  int       # the index of the position of w in the BOUNDARY list of the SIDE polygon
+  enter1:     List[int] # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
+  enter2:     List[int] # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
 
-
-# Each record of POLY corresponds to a polygon in Gamma
-# and contains a list, BOUNDARY, of the indices of vertices in VERT that are on the boundary of Pi,
-# listed as they would occur if one were to traverse Pi
+# Each record of POLY corresponds to a polygon in the projection plane and contains the following field:
 @dataclass
 class Poly2D:
-  boundary: List[int]
-  coordinates: List[int] # For storing [a, b, c, d] for the planar equation ax + by + cz + d = 0
-  
+  boundary:     List[int] # a list, BOUNDARY, of the indices of vertices in VERT that are on the boundary of the polygon, in counter clockwise winding
+  coordinates:  List[int] # For storing [a, b, c, d] for the planar equation ax + by + cz + d = 0
