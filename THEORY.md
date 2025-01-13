@@ -3,7 +3,7 @@ This is an attempted implementation of Michael Goodrich's Hidden-Line and Hidden
 
 ## Step 0: _Projecting onto the Image Plane_
 ### High-Level Description
-Transformation and rotation matrices are applied to the vertices of objects in the scene. Vertices behind the camera are culled, and faces that partially extend behind the camera are clipped. The 3D polygons of the shapes in the scene are projected onto the image plane, using the camera's projection matrix. Before storing these lines, face normals are compared to the vector representing the direction is facing, and this information is used to cull back faces.
+Transformation and rotation matrices are applied to the vertices of objects in the scene. Vertices behind the camera are culled, and faces that partially extend behind the camera are clipped. The 3D polygons of the shapes in the scene are projected onto the image plane, using the camera's projection matrix. Before storing these lines, face normals are compared to the vector representing the direction the camera is facing, and this information is used to cull back faces.
 
 ## Step 1: _Constructing the Polygon Arrangement_
 ### High-Level Description
