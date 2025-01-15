@@ -221,6 +221,12 @@ class Vertex2D:
   coordinates:  tuple[float, float]  # the x and y coordinates of v
   adjacencies:  List[int]            # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
 
+# Each record of VERT corresponds to a vertex v, and contains the following fields:
+@dataclass
+class Vertex3D:
+  coordinates:  tuple[float, float, float]  # the x, y, and z coordinates of v
+  adjacencies:  List[int]                   # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
+
 # Each record of EDGE corresponds to an edge (v, w), and contains the following fields:
 @dataclass
 class Edge2D:
@@ -232,8 +238,23 @@ class Edge2D:
   enter1:     List[int] # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
   enter2:     List[int] # an adjacency list ADJACENCIES, which lists the indices of the edges in EDGE which are incident to v
 
+# Each record of EDGE corresponds to an edge (v, w), and contains the following fields:
+@dataclass
+class Edge3D:
+  v_index_v:  int       # the index of v in VERT
+  w_index_v:  int       # the index of w in VERT
+  side:       int       # the index, SIDE, of the face (if any) in POLY that contains (v, w) on its boundary
+  v_index_s:  int       # the index of the position of v in the BOUNDARY list of the SIDE face
+  w_index_s:  int       # the index of the position of w in the BOUNDARY list of the SIDE face
+
 # Each record of POLY corresponds to a polygon in the projection plane and contains the following field:
 @dataclass
 class Poly2D:
+  boundary:     List[int] # a list, BOUNDARY, of the indices of vertices in VERT that are on the boundary of the polygon, in counter clockwise winding
+  coordinates:  List[int] # For storing [a, b, c, d] for the planar equation ax + by + cz + d = 0
+
+# Each record of POLY corresponds to a polygon in the projection plane and contains the following field:
+@dataclass
+class Face3D:
   boundary:     List[int] # a list, BOUNDARY, of the indices of vertices in VERT that are on the boundary of the polygon, in counter clockwise winding
   coordinates:  List[int] # For storing [a, b, c, d] for the planar equation ax + by + cz + d = 0
